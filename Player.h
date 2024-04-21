@@ -13,7 +13,6 @@ class Player {
         std::vector<Card> discardPile; // cards won in battle
         std::vector<Card> cardsInPlay; // cards wagered
         std::string name;
-
         Card currentCard;
         void shuffleDiscardIntoDeck();
         struct Metrics{
@@ -27,6 +26,7 @@ class Player {
         // constructor
         Player(const std::string& playerName, std::vector<Card> initialDeck);
         Player();
+        bool isUser = false;
 
         // returns player name
         std::string toString() const {
@@ -45,7 +45,11 @@ class Player {
         }
 
         int deckSize() const {
-            return deck.size() + discardPile.size();
+            return deck.size();
+        }
+
+        int discardSize() const {
+            return discardPile.size();
         }
 
         // return all the cards player lost

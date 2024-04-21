@@ -20,6 +20,7 @@ private:
     bool checkEndGame() const;
     void displayResults() const;
     void PayWinner(int winnerId);
+    void promptEnterKey();
 };
 
 #endif // GAMEMANAGER_H

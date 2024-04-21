@@ -4,6 +4,7 @@
 #include <random>
 #include <chrono>
 
+
 GameManager::GameManager(int numPlayers) {
 
     std::vector<Card> initialDeck = buildDeck();
@@ -19,6 +20,8 @@ GameManager::GameManager(int numPlayers) {
         players.emplace_back("Player " + std::to_string(i + 1), playerDeck);
         currentCard += portionSize;
     }
+    // Set the first player to the user
+    players[0].isUser = true;
 }
 
 void GameManager::playGame() {
@@ -86,6 +89,13 @@ void GameManager::playRound() {
             std::cout << "Unexpected error: No tied players found when a tie was expected.\n";
         }
     }
+    std::cout << "\n\nScores:\n";
+    for (int i = 0; i < players.size(); ++i) {
+        std::cout << players[i].toString() << "\t" 
+            << players[i].deckSize() << "/" << players[i].discardSize() << " Deck/Discard \t"
+            << players[i].stats().battlesWon << " battles won \t"
+            << players[i].stats().warsWon << " wars won \n";
+    }
 }
 
 int GameManager::determineRoundWinner(const std::vector<Card> cards) {
@@ -112,17 +122,19 @@ void GameManager::handleWar(const std::vector<int>& tiedPlayers) {
     std::vector<Card> warCards;
 
     for (int playerIndex : tiedPlayers) {
+        players[playerIndex].enterWar();
+        // We draw a card face down
         if (players[playerIndex].hasCards()) {
-            players[playerIndex].enterWar();
             players[playerIndex].drawCard(); // Draw face-down card
-            std::cout << players[playerIndex].toString() << " places " << players[playerIndex].getCurrentCard().toString() << " face down.\n";
-
-            if (players[playerIndex].hasCards()) {
-                players[playerIndex].drawCard(); // Draw war card
-                warCards.push_back(players[playerIndex].getCurrentCard());
-                std::cout << players[playerIndex].toString() << " plays " << players[playerIndex].getCurrentCard().toString() << " for war.\n";
-            }
+            std::cout << players[playerIndex].toString() << " places a card face down.\n";
         }
+        // If we still have cards left, we draw a card face up
+        if (players[playerIndex].hasCards()) {
+            players[playerIndex].drawCard(); // Draw war card   
+        }
+        // We use the last drawn card, what ever the method as our next card
+        warCards.push_back(players[playerIndex].getCurrentCard());
+        std::cout << players[playerIndex].toString() << " plays " << players[playerIndex].getCurrentCard().toString() << " for war.\n";
     }
 
     int winnerIndex = determineRoundWinner(warCards);
@@ -145,10 +157,9 @@ void GameManager::PayWinner(int winnerIndex) {
         }
     }
 
-    // TODO: This should never happen, but some times...
     int totalCardsInPlay = 0;
     for (int i = 0; i < players.size(); ++i) {
-        totalCardsInPlay += players[i].deckSize();
+        totalCardsInPlay += players[i].deckSize() + players[i].discardSize();
     }
 
     if (totalCardsInPlay != 52) {
@@ -174,7 +185,7 @@ void GameManager::displayResults() const {
 
     // Iterate through all players to find the one with the most cards and to display their stats
     for (const auto& player : players) {
-        int totalCards = player.deckSize();
+        int totalCards = player.deckSize() + player.discardSize();
         std::cout << player.toString() << " won " << player.stats().battlesWon << " battles, participated in "
                 << player.stats().warsParticipated << " wars, and won " << player.stats().warsWon << " of them." << std::endl;
 
@@ -189,4 +200,10 @@ void GameManager::displayResults() const {
     } else {
         std::cout << "\n\n=============\n\nNo clear winner could be determined.\n\n=============\n\n";
     }
+}
+
+
+void GameManager::promptEnterKey() {
+    std::cout << "Press Enter to play a card...";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }

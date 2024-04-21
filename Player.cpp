@@ -3,6 +3,8 @@
 #include <random> 
 #include <stdexcept>
 #include <chrono>
+#include <iostream>
+#include <string>
 
 Player::Player(const std::string& playerName, std::vector<Card> initialDeck) 
     : name(playerName), deck(initialDeck) {}
@@ -24,6 +26,10 @@ Card Player::drawCard() {
     }
     if (deck.empty()) {
         throw std::runtime_error("have no cards, should of asked if I had any first");
+    }
+    if (isUser){
+        std::cout << "Press Enter to play a card...";
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     currentCard = deck.front();
     deck.erase(deck.begin());
